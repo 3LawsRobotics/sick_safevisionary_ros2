@@ -102,6 +102,13 @@ public:
    */
   void reset();
 
+  /*!
+   * @brief Ignore intensity publishing
+   *
+   * Call this function if intensity publishing is not desired.
+   */
+  void ignoreIntensityPublishing() { pub_intensity_ = false; }
+
 private:
   /*!
    * \brief Publishes the camera information of the sensor
@@ -243,6 +250,8 @@ private:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Image>> depth_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Image>> intensity_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Image>> state_pub_;
+
+  bool pub_intensity_ = true;
 };
 
 }  // namespace sick

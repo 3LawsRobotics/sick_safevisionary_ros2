@@ -65,7 +65,15 @@ SickSafeVisionary::CallbackReturn SickSafeVisionary::on_configure(
   }
 
   continue_ = true;
+
+  // Check if intensity publishing is desired
   data_publisher_ = std::make_unique<CompoundPublisher>(this);
+  bool pub_intensity = (this->has_parameter("pub_intensity"))
+                         ? this->get_parameter("pub_intensity").as_bool()
+                         : this->declare_parameter("pub_intensity", true);
+  if (!pub_intensity) {
+    data_publisher_->ignoreIntensityPublishing();
+  }
 
   // Parameters
   if (!this->has_parameter("frame_id")) {

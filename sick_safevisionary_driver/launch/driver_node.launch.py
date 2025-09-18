@@ -12,11 +12,11 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, EmitEvent, RegisterEventHandler
 from launch.events import matches_action
-from launch_ros.actions import LifecycleNode
-from launch_ros.events.lifecycle import ChangeState
-from launch_ros.event_handlers import OnStateTransition
-from lifecycle_msgs.msg import Transition
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import LifecycleNode
+from launch_ros.event_handlers import OnStateTransition
+from launch_ros.events.lifecycle import ChangeState
+from lifecycle_msgs.msg import Transition
 
 
 def generate_launch_description():
@@ -36,7 +36,12 @@ def generate_launch_description():
         default_value="True",
         description="Whether this driver reads data from real hardware.",
     )
-    args = [port, frame_id, real_hw]
+    pub_intensity = DeclareLaunchArgument(
+        "pub_intensity",
+        default_value="False",
+        description="Whether this driver publishes intensity data.",
+    )
+    args = [port, frame_id, real_hw, pub_intensity]
 
     # The Sick safeVisionary2 driver
     driver_node = LifecycleNode(
@@ -51,6 +56,7 @@ def generate_launch_description():
             {"port": LaunchConfiguration("port")},
             {"frame_id": LaunchConfiguration("frame_id")},
             {"real_hw": LaunchConfiguration("real_hw")},
+            {"pub_intensity": LaunchConfiguration("pub_intensity")},
         ],
     )
 

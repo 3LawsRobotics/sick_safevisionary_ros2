@@ -74,8 +74,10 @@ void CompoundPublisher::publish(
   if (depth_pub_->get_subscription_count() > 0) {
     publishDepthImage(header, frame_data);
   }
-  if (intensity_pub_->get_subscription_count() > 0) {
-    publishIntensityImage(header, frame_data);
+  if (pub_intensity_) {
+    if (intensity_pub_->get_subscription_count() > 0) {
+      publishIntensityImage(header, frame_data);
+    }
   }
   if (state_pub_->get_subscription_count() > 0) {
     publishStateMap(header, frame_data);
@@ -159,6 +161,36 @@ void CompoundPublisher::publishPointCloud(
   cloud_msg->width = frame_data.getWidth();
   cloud_msg->is_dense = false;
   cloud_msg->is_bigendian = false;
+
+  if (!pub_intensity) {
+    cloud_msg->fields.resize(3);
+    cloud_msg->fields[0].name = "x";
+    cloud_msg->fields[1].name = "y";
+    cloud_msg->fields[2].name = "z";
+    int offset = 0;
+    for (size_t i = 0; i < 3; ++i) {
+      cloud_msg->fields[i].offset = offset;
+      cloud_msg->fields[i].datatype = int(sensor_msgs::msg::PointField::FLOAT32);
+      cloud_msg->fields[i].count = 1;
+      offset += sizeof(float);
+    }
+    cloud_msg->point_step = offset;
+    cloud_msg->row_step = cloud_msg->point_step * cloud_msg->width;
+    cloud_msg->data.resize(cloud_msg->height * cloud_msg->row_step);
+
+    std::vector<visionary::PointXYZ> point_vec;
+    frame_data.generatePointCloud(point_vec);
+    frame_data.transformPointCloud(point_vec);
+
+    std::vector<visionary::PointXYZ>::const_iterator point_it = point_vec.begin();
+    for (size_t i = 0; i < point_vec.size(); ++i, ++point_it) {
+      memcpy(
+        &cloud_msg->data[i * cloud_msg->point_step + cloud_msg->fields[0].offset], &*point_it,
+        sizeof(visionary::PointXYZ));
+    }
+    pointcloud_pub_->publish(*cloud_msg);
+    return;
+  }
 
   cloud_msg->fields.resize(4);
   cloud_msg->fields[0].name = "x";
