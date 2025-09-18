@@ -162,7 +162,7 @@ void CompoundPublisher::publishPointCloud(
   cloud_msg->is_dense = false;
   cloud_msg->is_bigendian = false;
 
-  if (!pub_intensity) {
+  if (!pub_intensity_) {
     cloud_msg->fields.resize(3);
     cloud_msg->fields[0].name = "x";
     cloud_msg->fields[1].name = "y";
